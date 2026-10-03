@@ -1,7 +1,8 @@
 """Base internet provider: usernames, domains, emails, addresses."""
 
+import random as _std_random
 import re
-from typing import Sequence
+from typing import List, Optional, Sequence
 
 from ...core import BaseProvider
 
@@ -30,6 +31,18 @@ class Provider(BaseProvider):
     uri_pages: Sequence[str] = ("index", "home", "search", "main", "post", "register", "login", "about")
     uri_extensions: Sequence[str] = (".html", ".htm", ".php", ".jsp", ".asp", "")
 
+    #: ASCII words for domains, slugs and file names. Domain names cannot
+    #: carry Pashto script, so slugging Pashto words would leave nothing.
+    slug_words: Sequence[str] = (
+        "kabul", "herat", "kandahar", "mazar", "jalalabad", "kunduz", "ghazni",
+        "bamyan", "pamir", "hindukush", "panjshir", "helmand", "amu", "kabulriver",
+        "lapis", "saffron", "pomegranate", "almond", "pistachio", "carpet",
+        "silk", "caravan", "bazaar", "qala", "minar", "darya", "kotal", "dasht",
+        "spin", "tor", "shams", "nur", "sabz", "zarin", "watan", "pashto",
+        "afghan", "aryana", "khyber", "zabul", "logar", "wardak", "nangarhar",
+        "data", "cloud", "net", "soft", "tech", "media", "press", "post",
+    )
+
     # --- slugs and domains ------------------------------------------------
     def slugify(self, value: str) -> str:
         """Lowercase ASCII slug; non-Latin text is dropped, so callers should
@@ -40,8 +53,7 @@ class Provider(BaseProvider):
         return self.random_element(self.tlds)
 
     def domain_word(self) -> str:
-        word = self.slugify(self.generator.format("last_name"))
-        return word or self.lexify("?????", letters="abcdefghijklmnopqrstuvwxyz")
+        return self.random_element(self.slug_words)
 
     def domain_name(self, levels: int = 1) -> str:
         if levels < 1:
@@ -92,7 +104,8 @@ class Provider(BaseProvider):
         return f"{self.random_element(schemes)}://{self.domain_name()}/"
 
     def slug(self, value_count: int = 3) -> str:
-        return "-".join(self.slugify(w) or "x" for w in self.generator.format("words", nb=value_count))
+        """A hyphenated ASCII slug, suitable for URLs and file names."""
+        return "-".join(self.random_elements(self.slug_words, length=max(1, value_count)))
 
     # --- network numbers --------------------------------------------------
     def ipv4(self) -> str:
@@ -121,3 +134,88 @@ class Provider(BaseProvider):
         if is_user:
             return self.random_int(1024, 49151)
         return self.random_int(0, 65535)
+
+    # --- ASCII-guaranteed variants --------------------------------------
+    # These exist for callers that need to be certain a value is ASCII.
+    # Every address this provider makes already is, so they are aliases.
+    def ascii_email(self) -> str:
+        return self.email()
+
+    def ascii_safe_email(self) -> str:
+        return self.safe_email()
+
+    def ascii_free_email(self) -> str:
+        return self.free_email()
+
+    def ascii_company_email(self) -> str:
+        return self.company_email()
+
+    def safe_domain_name(self) -> str:
+        """A domain reserved for documentation, so it can never resolve."""
+        return f"example.{self.random_element(self.safe_email_tlds)}"
+
+    # --- HTTP -----------------------------------------------------------
+    http_methods: Sequence[str] = ("GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
+    http_statuses: Sequence[int] = (
+        200, 201, 202, 204, 301, 302, 304, 400, 401, 403, 404, 405, 409, 410,
+        422, 429, 500, 502, 503, 504,
+    )
+
+    def http_method(self) -> str:
+        return self.random_element(self.http_methods)
+
+    def http_status_code(self) -> int:
+        return self.random_element(self.http_statuses)
+
+    # --- address blocks -------------------------------------------------
+    def ipv4_public(self) -> str:
+        """An address outside the private, loopback and link-local ranges."""
+        while True:
+            candidate = self.ipv4()
+            first, second = (int(part) for part in candidate.split(".")[:2])
+            if first in (0, 10, 127) or first >= 224:
+                continue
+            if first == 172 and 16 <= second <= 31:
+                continue
+            if first == 192 and second == 168:
+                continue
+            if first == 169 and second == 254:
+                continue
+            return candidate
+
+    def ipv4_network_class(self) -> str:
+        return self.random_element(("a", "b", "c"))
+
+    # --- registry identifiers -------------------------------------------
+    def iana_id(self) -> str:
+        """An IANA registrar ID."""
+        return str(self.random_int(1, 8_999_999))
+
+    def ripe_id(self) -> str:
+        """A RIPE NCC organisation handle, e.g. ``ORG-AB123-RIPE``."""
+        letters = self.lexify("??", letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        return f"ORG-{letters}{self.random_int(1, 9999)}-RIPE"
+
+    def nic_handle(self, suffix: str = "AF") -> str:
+        """A network information centre handle."""
+        if suffix and suffix[0].isdigit():
+            raise ValueError("suffix cannot start with a digit")
+        letters = self.lexify("???", letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+        return f"{letters}{self.random_int(1, 9999)}-{suffix}" if suffix else f"{letters}{self.random_int(1, 9999)}"
+
+    def nic_handles(self, count: int = 1, suffix: str = "AF") -> List[str]:
+        return [self.nic_handle(suffix) for _ in range(count)]
+
+    def dga(self, year: Optional[int] = None, month: Optional[int] = None, day: Optional[int] = None,
+            tld: Optional[str] = None, length: int = 12) -> str:
+        """A domain-generation-algorithm style name, seeded by a date.
+
+        Used to produce look-alike malicious domains for detection testing.
+        """
+        from datetime import date as _date
+
+        today = _date.today()
+        seed_value = (year or today.year) * 10000 + (month or today.month) * 100 + (day or today.day)
+        rng = _std_random.Random(seed_value ^ self.random_int(0, 2**31))
+        name = "".join(rng.choice("abcdefghijklmnopqrstuvwxyz") for _ in range(length))
+        return f"{name}.{tld or self.tld()}"

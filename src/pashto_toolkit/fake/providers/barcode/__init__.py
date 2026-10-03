@@ -32,3 +32,21 @@ class Provider(BaseProvider):
     def upc_a(self, prefix: str = "") -> str:
         """UPC-A is an EAN-13 whose leading digit is zero, written as 12 digits."""
         return self._ean(13, prefix="0" + prefix)[1:]
+
+    def localized_ean(self, length: int = 13) -> str:
+        """An EAN carrying one of this locale's own GS1 prefixes."""
+        if not self.local_prefixes:
+            return self._ean(length)
+        prefix = self.random_element([str(p[0]) for p in self.local_prefixes])
+        return self._ean(length, prefix=prefix)
+
+    def localized_ean8(self) -> str:
+        return self.localized_ean(8)
+
+    def localized_ean13(self) -> str:
+        return self.localized_ean(13)
+
+    def upc_e(self) -> str:
+        """An 8-digit UPC-E: number system, six digits and a check digit."""
+        body = "0" + self.numerify("######")
+        return f"{body}{ean_check_digit(body)}"

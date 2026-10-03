@@ -57,3 +57,7 @@ class Provider(BaseProvider):
         if length not in (8, 11):
             raise ValueError("A BIC is either 8 or 11 characters long.")
         return self.swift8() if length == 8 else self.swift11()
+
+    def bank(self) -> str:
+        """Alias of :meth:`bank_name`."""
+        return self.bank_name()

@@ -51,3 +51,17 @@ class Provider(BaseProvider):
         if len(body) != 9:
             raise ValueError(f"ISBN-10 body must be 9 digits, got {len(body)}: {body!r}")
         return separator.join((group, registrant, publication, isbn10_check_digit(body)))
+
+    def sbn9(self, separator: str = "-") -> str:
+        """A 9-character SBN, the pre-1974 form of an ISBN."""
+        isbn = self.isbn10(separator="")
+        # An SBN is an ISBN-10 for group 0 with the group digit removed.
+        body = isbn[1:-1] if isbn.startswith("0") else isbn[:-1]
+        body = body[:8].ljust(8, "0")
+        return separator.join((body[:3], body[3:], isbn10_check_digit(body)))
+
+    def doi(self) -> str:
+        """A DOI name: the 10. prefix, a registrant and a suffix."""
+        registrant = self.numerify("####")
+        suffix = self.bothify("??########", letters="abcdefghijklmnopqrstuvwxyz")
+        return f"10.{registrant}/{suffix}"

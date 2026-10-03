@@ -9,8 +9,10 @@ PACKAGE_ROOT = pathlib.Path(pashto_toolkit.__file__).parent
 
 #: Only the standard library is allowed.
 ALLOWED_TOP_LEVEL = {
-    "ast", "collections", "datetime", "decimal", "importlib", "pathlib", "random",
-    "re", "string", "sys", "types", "typing", "unicodedata", "pashto_toolkit",
+    "ast", "builtins", "collections", "csv", "datetime", "decimal", "enum",
+    "hashlib", "importlib", "io", "json", "pathlib", "random", "re", "string",
+    "struct", "sys", "tarfile", "types", "typing", "unicodedata", "uuid",
+    "xml", "zipfile", "zlib", "pashto_toolkit",
 }
 
 

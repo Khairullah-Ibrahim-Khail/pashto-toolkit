@@ -4,14 +4,16 @@ import pytest
 
 import pashto_toolkit
 from pashto_toolkit import Generator, PashtoFaker, UnknownFormatter
-from pashto_toolkit.fake.providers import LOCALES, PROVIDER_TYPES, provider_class
+from pashto_toolkit.fake.providers import ALL_PROVIDER_TYPES, LOCALES, PROVIDER_TYPES, provider_class
+from pashto_toolkit.fake.providers.misc import Provider
 
 
 @pytest.mark.parametrize("locale", LOCALES)
 def test_every_locale_builds(locale):
     fake = PashtoFaker(locale)
     assert isinstance(fake, Generator)
-    assert fake.locale == locale
+    assert fake.current_locale == locale
+    assert fake.locale() in Provider.language_locale_codes
 
 
 def test_unknown_locale_is_rejected():
@@ -56,7 +58,8 @@ def test_formatters_are_discoverable():
 def test_add_providers_onto_a_bare_generator():
     generator = Generator("pa_AF", seed=1)
     added = pashto_toolkit.add_providers(generator, "pa_AF")
-    assert set(added) == set(PROVIDER_TYPES)
+    # Both the locale providers and the language-independent ones.
+    assert set(added) == set(ALL_PROVIDER_TYPES)
     assert generator.province()
     assert generator.afghan_id()
 
@@ -80,13 +83,16 @@ def test_unknown_provider_names_are_rejected():
         provider_class("person", "xx_XX")
 
 
-def test_base_provider_helpers_are_not_formatters():
-    """numerify/random_element and friends are tools, not data to generate."""
-    from pashto_toolkit.fake import BaseProvider
-
-    helpers = {name for name in dir(BaseProvider) if not name.startswith("_")}
-    leaked = helpers & set(PashtoFaker().formatters())
-    assert not leaked, f"BaseProvider helpers advertised as formatters: {sorted(leaked)}"
+def test_the_random_helpers_are_available_on_the_generator():
+    """numerify, random_element and friends are useful directly, as in Faker."""
+    fake = PashtoFaker(seed=1)
+    assert len(fake.numerify("###")) == 3
+    assert fake.random_element(("a", "b")) in ("a", "b")
+    assert 1 <= fake.random_int(1, 5) <= 5
+    assert len(str(fake.random_number(digits=4, fix_len=True))) == 4
+    assert len(fake.random_letters(8)) == 8
+    assert len(fake.random_sample(list(range(10)), 4)) == 4
+    assert len(set(fake.random_sample(list(range(10)), 10))) == 10
 
 
 @pytest.mark.parametrize("locale", LOCALES)

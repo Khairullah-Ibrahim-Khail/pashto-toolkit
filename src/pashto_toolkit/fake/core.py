@@ -4,6 +4,7 @@ Replaces the generic machinery the providers need, so that the
 package has no third-party dependency.
 """
 
+import builtins
 import random as _random
 import re
 import string
@@ -65,8 +66,72 @@ class BaseProvider:
     def random_digit_not_zero(self) -> int:
         return self.generator.random.randint(1, 9)
 
+    def random_digit_not_null(self) -> int:
+        """Older name for :meth:`random_digit_not_zero`."""
+        return self.random_digit_not_zero()
+
+    def random_digit_not_null_or_empty(self) -> Union[int, str]:
+        """Older name for :meth:`random_digit_not_zero_or_empty`."""
+        return self.random_digit_not_zero_or_empty()
+
+    def random_digit_above_two(self) -> int:
+        return self.generator.random.randint(2, 9)
+
+    def random_digit_or_empty(self) -> Union[int, str]:
+        """A digit half the time, an empty string the rest."""
+        return self.random_digit() if self.generator.random.random() < 0.5 else ""
+
+    def random_digit_not_zero_or_empty(self) -> Union[int, str]:
+        return self.random_digit_not_zero() if self.generator.random.random() < 0.5 else ""
+
+    def random_number(self, digits: Optional[int] = None, fix_len: bool = False) -> int:
+        """A number of ``digits`` digits; ``fix_len`` forbids a leading zero."""
+        if digits is None:
+            digits = self.random_int(1, 9)
+        if digits < 0:
+            raise ValueError("digits cannot be negative")
+        if digits == 0:
+            return 0
+        if fix_len:
+            return self.random_int(10 ** (digits - 1), 10**digits - 1)
+        return self.random_int(0, 10**digits - 1)
+
     def random_letter(self) -> str:
         return self.generator.random.choice(string.ascii_letters)
+
+    def random_letters(self, length: int = 16) -> List[str]:
+        return [self.random_letter() for _ in range(length)]
+
+    def random_lowercase_letter(self) -> str:
+        return self.generator.random.choice(string.ascii_lowercase)
+
+    def random_choices(self, elements: Sequence[T], length: Optional[int] = None) -> List[T]:
+        """Pick with replacement, so values may repeat."""
+        return self.random_elements(elements, length=1 if length is None else length, unique=False)
+
+    def random_sample(self, elements: Sequence[T], length: Optional[int] = None) -> List[T]:
+        """Pick without replacement, so values are distinct."""
+        pool = list(elements)
+        return self.random_elements(pool, length=len(pool) if length is None else length, unique=True)
+
+    def randomize_nb_elements(
+        self,
+        number: int = 10,
+        le: bool = False,
+        ge: bool = False,
+        min: Optional[int] = None,
+        max: Optional[int] = None,
+    ) -> int:
+        """Jitter ``number`` by up to 40%, optionally clamped to one side."""
+        if le and ge:
+            return number
+        low, high = (100, 140) if ge else (60, 100) if le else (60, 140)
+        value = int(number * self.random_int(low, high) / 100) + 1
+        if min is not None:
+            value = builtins.max(value, min)
+        if max is not None:
+            value = builtins.min(value, max)
+        return value
 
     def random_uppercase_letter(self) -> str:
         return self.generator.random.choice(string.ascii_uppercase)
@@ -106,8 +171,8 @@ class BaseProvider:
         return self.generator.parse(template)
 
 
-#: Attributes every provider inherits, which are not formatters.
-_NOT_FORMATTERS = frozenset(name for name in dir(BaseProvider) if not name.startswith("_"))
+#: Provider attributes that are plumbing rather than callable formatters.
+_NOT_FORMATTERS = frozenset({"generator", "random"})
 
 
 class Generator:
@@ -122,8 +187,12 @@ class Generator:
     The most recently added provider wins when two supply the same formatter.
     """
 
+    #: The locale this generator was built for. Named ``current_locale``
+    #: because ``locale`` is itself a formatter, from the misc provider.
+    current_locale: str
+
     def __init__(self, locale: str = "pa_AF", seed: Optional[int] = None) -> None:
-        self.locale = locale
+        self.current_locale = locale
         self.random = _random.Random(seed)
         self._formatters: Dict[str, Callable[..., Any]] = {}
         self._providers: List[BaseProvider] = []
@@ -132,10 +201,9 @@ class Generator:
     def add_provider(self, provider: Union[BaseProvider, Type[BaseProvider]]) -> BaseProvider:
         """Register a provider instance or class and expose its formatters.
 
-        Only the provider's own methods become formatters. The helpers it
-        inherits from :class:`BaseProvider` -- ``numerify``, ``random_element``
-        and the rest -- are tools for writing providers, not data to generate,
-        so they stay off the generator.
+        Every public method becomes a formatter, including the helpers from
+        :class:`BaseProvider` such as ``numerify`` and ``random_element``,
+        which are useful directly on the generator.
         """
         instance = provider(self) if isinstance(provider, type) else provider
         self._providers.insert(0, instance)
@@ -170,7 +238,7 @@ class Generator:
             formatter = self._formatters[name]
         except KeyError:
             raise UnknownFormatter(
-                f"No provider supplies a formatter named {name!r} for locale {self.locale!r}."
+                f"No provider supplies a formatter named {name!r} for locale {self.current_locale!r}."
             ) from None
         return formatter(*args, **kwargs)
 
@@ -185,14 +253,14 @@ class Generator:
             return self.__dict__["_formatters"][name]
         except KeyError:
             raise UnknownFormatter(
-                f"No provider supplies a formatter named {name!r} for locale {self.locale!r}."
+                f"No provider supplies a formatter named {name!r} for locale {self.current_locale!r}."
             ) from None
 
     def __dir__(self) -> List[str]:
         return sorted({*super().__dir__(), *self._formatters})
 
     def __repr__(self) -> str:
-        return f"<Generator locale={self.locale!r} providers={len(self._providers)}>"
+        return f"<Generator locale={self.current_locale!r} providers={len(self._providers)}>"
 
 
 def date_between(rng: _random.Random, start: date, end: date) -> date:

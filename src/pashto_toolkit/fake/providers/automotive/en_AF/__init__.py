@@ -1,7 +1,7 @@
-from ....core import BaseProvider
+from .. import Provider as AutomotiveProvider
 
 
-class Provider(BaseProvider):
+class Provider(AutomotiveProvider):
     """
     Afghan automotive license plate provider for en_AF locale.
     Generates custom Afghan-style license plates.

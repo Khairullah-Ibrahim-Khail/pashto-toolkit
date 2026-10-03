@@ -12,3 +12,10 @@ class Provider(BaseProvider):
 
     def job(self) -> str:
         return self.random_element(self.jobs)
+
+    def job_male(self) -> str:
+        """Afghan job titles are not gender-inflected."""
+        return self.job()
+
+    def job_female(self) -> str:
+        return self.job()

@@ -1,7 +1,9 @@
 """Base date/time provider, using the Afghan solar calendar month names."""
 
 from datetime import date, datetime, timedelta
-from typing import Sequence, Union
+from datetime import time as _time
+from datetime import timezone as _timezone
+from typing import Optional, Sequence, Union
 
 from ...core import BaseProvider, date_between, datetime_between
 
@@ -21,6 +23,14 @@ class Provider(BaseProvider):
 
     #: Oldest birth date date_of_birth() will produce, in years.
     max_age = 115
+
+    #: IANA zones, led by Afghanistan's and those of its neighbours.
+    timezones: Sequence[str] = (
+        "Asia/Kabul", "Asia/Karachi", "Asia/Tehran", "Asia/Dushanbe", "Asia/Tashkent",
+        "Asia/Ashgabat", "Asia/Kolkata", "Asia/Dubai", "Asia/Riyadh", "Europe/Istanbul",
+        "Europe/London", "Europe/Berlin", "America/New_York", "America/Los_Angeles",
+        "Asia/Shanghai", "Asia/Tokyo", "Australia/Sydney", "UTC",
+    )
 
     # --- primitives -------------------------------------------------------
     def unix_time(self, start: int = 0, end: int = 2_000_000_000) -> int:
@@ -95,3 +105,84 @@ class Provider(BaseProvider):
         """The locale weekday name, with the week starting on Saturday."""
         # date.weekday() is 0 for Monday; shift so Saturday lands on 0.
         return self.day_names[(self.date_object().weekday() + 2) % 7]
+
+    # --- datetimes ------------------------------------------------------
+    def date_time_between(self, start_date: DateLike, end_date: DateLike) -> datetime:
+        """A datetime in ``[start_date, end_date]``."""
+        start = start_date if isinstance(start_date, datetime) else datetime.combine(start_date, _time.min)
+        end = end_date if isinstance(end_date, datetime) else datetime.combine(end_date, _time.max)
+        return datetime_between(self.generator.random, start, end)
+
+    def date_time_between_dates(self, datetime_start: DateLike, datetime_end: DateLike) -> datetime:
+        return self.date_time_between(datetime_start, datetime_end)
+
+    def date_time_this_year(self) -> datetime:
+        now = datetime.now()
+        return datetime_between(self.generator.random, datetime(now.year, 1, 1), now)
+
+    def date_time_this_decade(self) -> datetime:
+        now = datetime.now()
+        return datetime_between(self.generator.random, datetime(now.year - now.year % 10, 1, 1), now)
+
+    def date_time_this_month(self) -> datetime:
+        now = datetime.now()
+        return datetime_between(self.generator.random, datetime(now.year, now.month, 1), now)
+
+    def past_datetime(self, days: int = 30) -> datetime:
+        now = datetime.now()
+        return datetime_between(self.generator.random, now - timedelta(days=days), now)
+
+    def future_datetime(self, days: int = 30) -> datetime:
+        now = datetime.now()
+        return datetime_between(self.generator.random, now, now + timedelta(days=days))
+
+    def date_this_month(self) -> date:
+        today = date.today()
+        return date_between(self.generator.random, date(today.year, today.month, 1), today)
+
+    # --- times and offsets ----------------------------------------------
+    def time_object(self) -> _time:
+        return _time(self.random_int(0, 23), self.random_int(0, 59), self.random_int(0, 59))
+
+    def time_delta(self, end_datetime: Optional[datetime] = None) -> timedelta:
+        """A duration between zero and the distance to ``end_datetime``."""
+        limit = int((end_datetime - datetime.now()).total_seconds()) if end_datetime else 365 * 24 * 3600
+        return timedelta(seconds=self.random_int(0, abs(limit)))
+
+    def iso8601(self) -> str:
+        return self.date_time().isoformat()
+
+    def am_pm(self) -> str:
+        return self.random_element(("AM", "PM"))
+
+    def century(self) -> str:
+        return self.random_element(
+            ("XIV", "XV", "XVI", "XVII", "XVIII", "XIX", "XX", "XXI")
+        )
+
+    def timezone(self) -> str:
+        """An IANA zone name; Afghanistan's own comes first in the list."""
+        return self.random_element(self.timezones)
+
+    def utc_offset(self) -> str:
+        """Afghanistan runs at UTC+04:30, which is one of the few half-hour-plus offsets."""
+        return "+04:30"
+
+    def tzinfo(self) -> _timezone:
+        return _timezone(timedelta(minutes=270), name="Asia/Kabul")
+
+    def unix_timestamp(self) -> int:
+        return int(self.date_time().timestamp())
+
+    def date_this_century(self) -> date:
+        today = date.today()
+        return date_between(self.generator.random, date(today.year - today.year % 100, 1, 1), today)
+
+    def date_time_this_century(self) -> datetime:
+        now = datetime.now()
+        return datetime_between(self.generator.random, datetime(now.year - now.year % 100, 1, 1), now)
+
+    def date_time_ad(self, start_year: int = 1) -> datetime:
+        """A datetime anywhere from year ``start_year`` to now."""
+        now = datetime.now()
+        return datetime_between(self.generator.random, datetime(max(1, start_year), 1, 1), now)

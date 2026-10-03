@@ -2,9 +2,10 @@
 
 from pashto_toolkit import PashtoFaker
 
-# seed=... makes every run print the same thing. Remove it for fresh data.
-pa = PashtoFaker("pa_AF", seed=42)   # Pashto script
-en = PashtoFaker("en_AF", seed=42)   # Latin transliteration
+# No seed, so every run gives different data.
+# Pass seed=42 if you want the SAME data every run (useful in tests).
+pa = PashtoFaker("pa_AF")   # Pashto script
+en = PashtoFaker("en_AF")   # Latin transliteration
 
 print("=" * 60)
 print("PASHTO (pa_AF)")
@@ -57,8 +58,8 @@ print()
 print("=" * 60)
 print("SEEDING: the same seed gives the same data")
 print("=" * 60)
-print("run A:", [PashtoFaker('pa_AF', seed=7).name() for _ in range(1)][0])
-print("run B:", [PashtoFaker('pa_AF', seed=7).name() for _ in range(1)][0], "  <- identical")
+print("unseeded :", PashtoFaker('pa_AF').name(), "/", PashtoFaker('pa_AF').name(), " <- different")
+print("seed=7   :", PashtoFaker('pa_AF', seed=7).name(), "/", PashtoFaker('pa_AF', seed=7).name(), " <- identical")
 
 print()
 print(f"{len(pa.formatters())} formatters available.")

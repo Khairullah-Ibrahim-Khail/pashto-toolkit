@@ -13,7 +13,7 @@ from ..core import BaseProvider
 #: Locales this package provides.
 LOCALES: Tuple[str, ...] = ("pa_AF", "en_AF")
 
-#: Provider types, in the order they are registered on a generator.
+#: Provider types that carry Afghan data, one subpackage per locale.
 PROVIDER_TYPES: Tuple[str, ...] = (
     "address",
     "automotive",
@@ -35,6 +35,21 @@ PROVIDER_TYPES: Tuple[str, ...] = (
     "ssn",
 )
 
+#: Provider types whose values are the same in any language, so they have no
+#: locale subpackage: hashes, Python primitives, files, user agents, profiles.
+GLOBAL_PROVIDER_TYPES: Tuple[str, ...] = (
+    "misc",
+    "python_types",
+    "file",
+    "user_agent",
+    "reference",
+    "serialisation",
+    "profile",
+)
+
+#: Every provider type this package ships.
+ALL_PROVIDER_TYPES: Tuple[str, ...] = PROVIDER_TYPES + GLOBAL_PROVIDER_TYPES
+
 
 def _check(provider_type: str, locale: str) -> None:
     if provider_type not in PROVIDER_TYPES:
@@ -51,9 +66,23 @@ def provider_module(provider_type: str, locale: str) -> ModuleType:
 
 def base_module(provider_type: str) -> ModuleType:
     """Import the locale-independent base module for ``provider_type``."""
-    if provider_type not in PROVIDER_TYPES:
+    if provider_type not in ALL_PROVIDER_TYPES:
         raise ValueError(f"Unknown provider type {provider_type!r}.")
     return import_module(f"{__name__}.{provider_type}")
+
+
+def global_provider_class(provider_type: str) -> Type[BaseProvider]:
+    """Return the ``Provider`` class of a type that has no locale variants."""
+    if provider_type not in GLOBAL_PROVIDER_TYPES:
+        raise ValueError(
+            f"{provider_type!r} is not a global provider type. Expected one of {GLOBAL_PROVIDER_TYPES}."
+        )
+    return base_module(provider_type).Provider
+
+
+def global_provider_classes() -> Dict[str, Type[BaseProvider]]:
+    """Every locale-independent provider class, keyed by provider type."""
+    return {name: global_provider_class(name) for name in GLOBAL_PROVIDER_TYPES}
 
 
 def provider_class(provider_type: str, locale: str) -> Type[BaseProvider]:
@@ -68,11 +97,11 @@ def provider_classes(locale: str = "pa_AF") -> Dict[str, Type[BaseProvider]]:
 
 def __getattr__(name: str) -> ModuleType:
     # Lets `from pashto_toolkit.fake.providers import person` work without
-    # importing all 36 locale modules at package import time.
-    if name in PROVIDER_TYPES:
+    # importing all the locale modules at package import time.
+    if name in ALL_PROVIDER_TYPES:
         return import_module(f"{__name__}.{name}")
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
 def __dir__() -> List[str]:
-    return sorted({*globals(), *PROVIDER_TYPES})
+    return sorted({*globals(), *ALL_PROVIDER_TYPES})

@@ -44,13 +44,18 @@ class Provider(BaseProvider):
         return self.random_element(self._pool(self.first_names_female, self.first_names))
 
     def first_name_nonbinary(self) -> str:
-        return self.random_element(
-            self._pool(
-                self.first_names_nonbinary,
-                self.first_names,
-                tuple(self.first_names_male) + tuple(self.first_names_female),
-            )
+        """A given name with no gender marker.
+
+        Afghan given names are strongly gendered, so unless a locale supplies
+        its own list this falls back to :meth:`first_name`, which draws from
+        both.
+        """
+        pool = self._pool(
+            self.first_names_nonbinary,
+            self.first_names,
+            tuple(self.first_names_male) + tuple(self.first_names_female),
         )
+        return self.random_element(pool) if pool else self.first_name()
 
     def last_name(self) -> str:
         return self.random_element(self.last_names)
@@ -75,3 +80,28 @@ class Provider(BaseProvider):
 
     def suffix(self) -> str:
         return self.random_element(self.suffixes) if self.suffixes else ""
+
+    def name_nonbinary(self) -> str:
+        return f"{self.first_name_nonbinary()} {self.last_name()}"
+
+    def last_name_male(self) -> str:
+        """Afghan family names do not inflect for gender."""
+        return self.last_name()
+
+    def last_name_female(self) -> str:
+        return self.last_name()
+
+    def last_name_nonbinary(self) -> str:
+        return self.last_name()
+
+    def prefix_nonbinary(self) -> str:
+        return self.prefix()
+
+    def suffix_male(self) -> str:
+        return self.suffix()
+
+    def suffix_female(self) -> str:
+        return self.suffix()
+
+    def suffix_nonbinary(self) -> str:
+        return self.suffix()

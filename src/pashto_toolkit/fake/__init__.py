@@ -17,9 +17,13 @@ from typing import Any, Dict, List, Optional, Type
 
 from .core import BaseProvider, Generator, UnknownFormatter
 from .providers import (
+    ALL_PROVIDER_TYPES,
+    GLOBAL_PROVIDER_TYPES,
     LOCALES,
     PROVIDER_TYPES,
     base_module,
+    global_provider_class,
+    global_provider_classes,
     provider_class,
     provider_classes,
     provider_module,
@@ -29,10 +33,12 @@ from .types import CreditCard, SexLiteral
 DEFAULT_LOCALE = "pa_AF"
 
 __all__ = [
+    "ALL_PROVIDER_TYPES",
     "BaseProvider",
     "CreditCard",
     "DEFAULT_LOCALE",
     "Generator",
+    "GLOBAL_PROVIDER_TYPES",
     "LOCALES",
     "PROVIDER_TYPES",
     "PashtoFaker",
@@ -41,6 +47,8 @@ __all__ = [
     "add_providers",
     "available_locales",
     "base_module",
+    "global_provider_class",
+    "global_provider_classes",
     "provider_class",
     "provider_classes",
     "provider_module",
@@ -66,9 +74,10 @@ def add_providers(generator: Generator, locale: str = DEFAULT_LOCALE) -> Dict[st
     Useful for adding Afghan data to a generator that already carries
     providers of your own.
 
-    :returns: the provider classes added, keyed by provider type.
+    :returns: the provider classes added, keyed by provider type. This covers
+        both the locale providers and the language-independent ones.
     """
-    classes = provider_classes(locale)
+    classes = {**provider_classes(locale), **global_provider_classes()}
     for provider_cls in classes.values():
         generator.add_provider(provider_cls)
     return classes

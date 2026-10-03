@@ -44,7 +44,24 @@ Machine-readable values stay Latin in both locales, because that is what they ar
 
 ## What it generates
 
-18 provider types, 133 formatters. The Afghanistan-specific ones:
+Everything Faker's `en_US` locale offers (280 formatters) except the 16 US-only ones — `zipcode`, `state_abbr`, `military_apo`, `ein`, `itin`, `aba` and the like, which have no Afghan meaning. 287 formatters in total.
+
+| area | formatters |
+|---|---|
+| Afghan data | `province` `district` `afghan_id` `license_plate` `passport_number` `bank_name` `iban` `pricetag` … |
+| person | `name` `first_name_male/female/nonbinary` `prefix` `suffix` `job_male/female` … |
+| address | `address` `city` `street_name` `postcode` `state` `secondary_address` `country` … |
+| internet | `email` `safe_email` `ascii_email` `url` `ipv4` `ipv6` `mac_address` `slug` `http_status_code` `nic_handle` `dga` … |
+| misc | `uuid4` `boolean` `md5` `sha256` `password` `binary` `emoji` `image` `image_url` `locale` `enum` … |
+| python values | `pyint` `pyfloat` `pystr` `pybool` `pylist` `pydict` `pyset` `pytuple` `pyobject` `pystruct` … |
+| date & time | `date_time_between` `iso8601` `timezone` `time_delta` `past_datetime` `date_this_century` `am_pm` … |
+| files | `file_name` `file_path` `mime_type` `file_extension` `unix_device` … |
+| serialisation | `json` `csv` `tsv` `psv` `dsv` `xml` `fixed_width` `zip` `tar` `time_series` |
+| profiles | `profile` `simple_profile` `blood_group` |
+| browsers | `user_agent` `chrome` `firefox` `safari` `opera` `internet_explorer` … |
+| codes | `ean13` `ean8` `upc_a` `upc_e` `isbn10` `isbn13` `sbn9` `doi` `credit_card_number` `vin` … |
+
+25 provider types, 287 formatters. The Afghanistan-specific ones:
 
 - **`afghan_id()`** — national ID (tazkira), `XXXX-XXX-XXX-XXX`: twelve digits plus a Luhn check digit. Also `ssn()`.
 - **`province()` / `city()` / `district()`** — all 34 provinces, each with its capital and its districts. `city(province)` and `district(province)` stay consistent with the province you pass.

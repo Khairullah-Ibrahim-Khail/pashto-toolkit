@@ -55,3 +55,26 @@ class Provider(BaseProvider):
     def pricetag(self) -> str:
         price = self.numerify(self.random_element(self.price_formats))
         return f"{self.local_currency_code} {price}"
+
+    #: (code, name)
+    cryptocurrencies: Sequence[Tuple[str, str]] = (
+        ("BTC", "Bitcoin"),
+        ("ETH", "Ethereum"),
+        ("USDT", "Tether"),
+        ("BNB", "Binance Coin"),
+        ("XRP", "Ripple"),
+        ("USDC", "USD Coin"),
+        ("ADA", "Cardano"),
+        ("SOL", "Solana"),
+        ("DOGE", "Dogecoin"),
+        ("TRX", "TRON"),
+    )
+
+    def cryptocurrency(self) -> Tuple[str, str]:
+        return self.random_element(self.cryptocurrencies)
+
+    def cryptocurrency_code(self) -> str:
+        return self.cryptocurrency()[0]
+
+    def cryptocurrency_name(self) -> str:
+        return self.cryptocurrency()[1]

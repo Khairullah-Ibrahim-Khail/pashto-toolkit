@@ -37,3 +37,14 @@ class Provider(BaseProvider):
     def color(self) -> str:
         """A hex colour. Use :meth:`color_name` for the localized name."""
         return self.hex_color()
+
+    def color_hsl(self) -> Tuple[int, int, int]:
+        """Hue in degrees, saturation and lightness as percentages."""
+        return (self.random_int(0, 359), self.random_int(0, 100), self.random_int(0, 100))
+
+    def color_hsv(self) -> Tuple[int, int, int]:
+        return (self.random_int(0, 359), self.random_int(0, 100), self.random_int(0, 100))
+
+    def color_rgb_float(self) -> Tuple[float, float, float]:
+        """Channels normalised to 0.0-1.0."""
+        return tuple(round(self.random_int(0, 255) / 255, 6) for _ in range(3))

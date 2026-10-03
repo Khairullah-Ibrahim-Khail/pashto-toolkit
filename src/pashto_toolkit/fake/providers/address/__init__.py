@@ -53,4 +53,10 @@ class Provider(BaseProvider):
         return COUNTRY_CODE
 
     def current_country(self) -> str:
-        return COUNTRY_NAME.get(self.generator.locale, "Afghanistan")
+        return COUNTRY_NAME.get(self.generator.current_locale, "Afghanistan")
+
+    secondary_address_formats: Sequence[str] = ("Apt. ##", "Floor #", "Block #", "Unit ##")
+
+    def secondary_address(self) -> str:
+        """A flat, floor or block within a building."""
+        return self.numerify(self.random_element(self.secondary_address_formats))

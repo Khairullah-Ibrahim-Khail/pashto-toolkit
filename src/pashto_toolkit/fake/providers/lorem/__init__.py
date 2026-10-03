@@ -99,3 +99,6 @@ class Provider(BaseProvider):
         """Jitter a count by +/- ``spread``, never below one."""
         delta = int(value * spread)
         return max(1, value + self.random_int(-delta, delta))
+
+    def texts(self, nb_texts: int = 3, max_nb_chars: int = 200) -> List[str]:
+        return [self.text(max_nb_chars) for _ in range(nb_texts)]
