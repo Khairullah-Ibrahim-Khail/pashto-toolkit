@@ -15,7 +15,8 @@ class Provider(BankProvider):
         "AUAF", "FMBK", "STCA", "BMIA", "GHZN",
     )
     swift_location_codes = ("KA", "HE", "LO", "PA", "KU", "BE", "FA", "ZA", "JO", "GH")
-    swift_branch_codes = ("001", "002", "003", "004", "005", "ATM", "HQ", "BR1", "BR2")
+    # A BIC branch code is exactly 3 characters; XXX means the primary office.
+    swift_branch_codes = ("001", "002", "003", "004", "005", "ATM", "XXX", "BR1", "BR2")
 
     banks = (
         "Da Afghanistan Bank",
@@ -37,7 +38,9 @@ class Provider(BankProvider):
         return "AF" + "".join(str(self.generator.random.randint(0, 9)) for _ in range(16))
 
     def swift_code(self):
-        bank_code = self.generator.random.choice(self.swift_bank_codes)
-        location = self.generator.random.choice(self.swift_location_codes)
-        branch = self.generator.random.choice(self.swift_branch_codes)
-        return f"{bank_code}{location}{branch}"
+        """An 11-character BIC. Alias of ``swift(11)``.
+
+        A BIC is 4 bank characters, 2 country, 2 location and an optional 3
+        for the branch, so the country code cannot be left out.
+        """
+        return self.swift(11)

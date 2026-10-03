@@ -135,3 +135,37 @@ def test_pricetags_never_start_with_a_zero(locale):
         if digits.group().startswith("0"):
             offenders.add(value)
     assert not offenders, f"amounts with a leading zero: {sorted(offenders)[:5]}"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_bics_are_a_valid_length_and_shape(locale):
+    """Regression: a 2-character branch code made swift(11) 10 characters,
+    and swift_code() left out the country code entirely."""
+    import re
+
+    from pashto_toolkit import PashtoFaker
+
+    fake = PashtoFaker(locale, seed=5)
+    pattern = re.compile(r"[A-Z]{4}AF[A-Z0-9]{2}([A-Z0-9]{3})?")
+    for _ in range(1000):
+        assert len(fake.swift(8)) == 8
+        assert len(fake.swift(11)) == 11
+        assert len(fake.swift_code()) == 11
+        for value in (fake.swift(8), fake.swift(11), fake.swift_code()):
+            assert pattern.fullmatch(value), f"not a valid BIC: {value}"
+
+    branch_codes = provider_class("bank", locale).swift_branch_codes
+    assert all(len(code) == 3 for code in branch_codes), f"BIC branch codes must be 3 chars: {branch_codes}"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_msisdn_is_a_full_afghan_number(locale):
+    """Regression: it was 12 digits. Afghan E.164 is 93 plus nine digits."""
+    from pashto_toolkit import PashtoFaker
+
+    fake = PashtoFaker(locale, seed=5)
+    for _ in range(1000):
+        value = fake.msisdn()
+        assert value.isdigit(), value
+        assert len(value) == 11, f"expected 11 digits, got {len(value)}: {value}"
+        assert value.startswith("937"), value

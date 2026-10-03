@@ -24,8 +24,12 @@ class Provider(BaseProvider):
         return "".join(c for c in self.phone_number() if c.isdigit())
 
     def msisdn(self) -> str:
-        """A 13-digit MSISDN: country code, mobile number, no plus sign."""
-        return f"{self.calling_code}7{self.numerify('#########')}"
+        """An MSISDN with no plus sign: country code plus the national number.
+
+        Afghan mobile numbers are nine national digits beginning with 7, so a
+        full MSISDN is 11 digits: ``93`` followed by ``7XXXXXXXX``.
+        """
+        return f"{self.calling_code}7{self.numerify('########')}"
 
     def e164(self) -> str:
         """The number in E.164 form, e.g. ``+93701234567``."""
