@@ -117,3 +117,21 @@ def test_emails_and_usernames_are_always_well_formed(locale):
 
     bad_names = {value for value in (fake.user_name() for _ in range(3000)) if not username.fullmatch(value)}
     assert not bad_names, f"malformed usernames: {sorted(bad_names)[:5]}"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_pricetags_never_start_with_a_zero(locale):
+    """Regression: the formats used `#` for the leading digit, giving '0,316'."""
+    import re
+
+    from pashto_toolkit import PashtoFaker
+
+    fake = PashtoFaker(locale, seed=1)
+    offenders = set()
+    for _ in range(3000):
+        value = fake.pricetag()
+        digits = re.search(r"[\d,]+", value)
+        assert digits, f"no amount in {value!r}"
+        if digits.group().startswith("0"):
+            offenders.add(value)
+    assert not offenders, f"amounts with a leading zero: {sorted(offenders)[:5]}"

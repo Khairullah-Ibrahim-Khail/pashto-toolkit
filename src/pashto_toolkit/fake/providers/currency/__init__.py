@@ -32,7 +32,8 @@ class Provider(BaseProvider):
 
     #: The locale's own currency, which pricetag() uses.
     local_currency_code = "AFN"
-    price_formats: Sequence[str] = ("###", "#,###", "##,###", "###,###")
+    # The leading digit is `%` (1-9) so amounts never start with a zero.
+    price_formats: Sequence[str] = ("%##", "%,###", "%#,###", "%##,###")
 
     def currency(self) -> Tuple[str, str, str]:
         return self.random_element(self.currencies)

@@ -21,7 +21,8 @@ class Provider(CurrencyProvider):
         ("GBP", "برتانوي پونډ", "£"),
     )
 
-    price_formats = ("###", "#,###", "##,###", "###,###")
+    # The leading digit is `%` (1-9); `#` would allow "0,316".
+    price_formats = ("%##", "%,###", "%#,###", "%##,###")
 
     def pricetag(self) -> str:
         """Afghan price tags put the afghani sign after the amount."""
