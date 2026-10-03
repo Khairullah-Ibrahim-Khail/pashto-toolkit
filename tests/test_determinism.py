@@ -1,30 +1,28 @@
-"""Faker's core promise is that a seed reproduces a run.
-
-The providers originally called the global ``random`` module, which Faker's
-seeding does not control, so these locales were not reproducible.
-"""
+"""A seed must reproduce a run exactly; that is the point of the package."""
 
 import pytest
 
-from pashto_toolkit.providers import LOCALES, PROVIDER_TYPES
+from pashto_toolkit import PashtoFaker
+from pashto_toolkit.fake.providers import LOCALES, PROVIDER_TYPES, provider_module
 
 FORMATTERS = [
     "name", "first_name", "last_name", "prefix", "job",
-    "province", "city", "district", "street", "street_name", "postcode", "address",
-    "company", "company_suffix", "bank_name", "swift", "account_number",
+    "province", "city", "district", "street", "street_name", "street_address",
+    "postcode", "address", "building_number",
+    "company", "company_suffix", "catch_phrase", "bs",
+    "bank_name", "swift", "iban", "account_number",
     "afghan_id", "ssn", "license_plate", "passport_number", "passport_gender",
-    "email", "user_name", "phone_number", "word", "sentence",
-    "color_name", "credit_card_number", "credit_card_provider",
-    "month_name", "day_of_week", "ean13", "isbn13", "local_latlng",
+    "email", "user_name", "url", "ipv4", "ipv6", "mac_address",
+    "phone_number", "word", "sentence", "paragraph",
+    "color_name", "color", "credit_card_number", "credit_card_provider",
+    "month_name", "day_of_week", "ean13", "upc_a", "isbn13", "isbn10",
+    "local_latlng", "currency_code", "currency_name", "pricetag",
 ]
 
 
 def _run(locale, seed):
-    from faker import Faker
-
-    Faker.seed(seed)
-    fake = Faker(locale)
-    return {name: [str(getattr(fake, name)()) for _ in range(5)] for name in FORMATTERS}
+    fake = PashtoFaker(locale, seed=seed)
+    return {name: [str(fake.format(name)) for _ in range(5)] for name in FORMATTERS}
 
 
 @pytest.mark.parametrize("locale", LOCALES)
@@ -36,16 +34,21 @@ def test_same_seed_gives_the_same_run(locale):
 
 @pytest.mark.parametrize("locale", LOCALES)
 def test_different_seeds_give_different_runs(locale):
-    first, second = _run(locale, 1), _run(locale, 2)
-    assert first != second, f"{locale}: output does not depend on the seed at all"
+    assert _run(locale, 1) != _run(locale, 2), f"{locale}: output ignores the seed"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_reseeding_an_existing_generator_restarts_the_sequence(locale):
+    fake = PashtoFaker(locale, seed=11)
+    first = [fake.name() for _ in range(5)]
+    fake.seed(11)
+    assert [fake.name() for _ in range(5)] == first
 
 
 @pytest.mark.parametrize("locale", LOCALES)
 def test_no_provider_calls_the_global_random_module(locale):
     """A static guard, so a future edit cannot quietly reintroduce the bug."""
     import inspect
-
-    from pashto_toolkit.providers import provider_module
 
     offenders = []
     for provider_type in PROVIDER_TYPES:
@@ -54,6 +57,9 @@ def test_no_provider_calls_the_global_random_module(locale):
             stripped = line.strip()
             if stripped.startswith("#") or "generator.random." in stripped:
                 continue
-            if "random." in stripped and "self." not in stripped:
+            if re.search(r"(?<![\w.])random\.", stripped):
                 offenders.append(f"{provider_type}/{locale}:{lineno}: {stripped}")
-    assert not offenders, "global random usage breaks Faker.seed():\n" + "\n".join(offenders)
+    assert not offenders, "global random usage breaks seeding:\n" + "\n".join(offenders)
+
+
+import re  # noqa: E402  (used by the guard above)

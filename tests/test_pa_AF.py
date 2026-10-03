@@ -78,7 +78,7 @@ def test_phone_numbers_are_afghan(pa):
 
 def test_country_code_is_afghanistan(pa):
     assert pa.current_country_code() == "AF"
-    assert pa.current_country() == "Afghanistan"
+    assert pa.current_country() == "افغانستان"
 
 
 def test_latin_formatters_stay_latin(pa):
@@ -96,7 +96,7 @@ def test_email_is_well_formed(pa):
 
 
 def test_lorem_draws_on_the_pashto_word_list(pa):
-    from pashto_toolkit.providers import provider_class
+    from pashto_toolkit.fake.providers import provider_class
 
     words = set(provider_class("lorem", "pa_AF").word_list)
     assert len(words) > 100, "the Pashto word list looks truncated"
@@ -110,7 +110,7 @@ def test_honorifics_are_titles_not_given_names(pa):
     Words like خان, سردار, ملا and بی بی are genuinely both titles and names,
     so only the unambiguous given names are checked here.
     """
-    from pashto_toolkit.providers import provider_class
+    from pashto_toolkit.fake.providers import provider_class
 
     cls = provider_class("person", "pa_AF")
     titles = set(cls.prefixes_male) | set(cls.prefixes_female)
@@ -122,7 +122,7 @@ def test_honorifics_are_titles_not_given_names(pa):
 
 def test_most_names_carry_no_honorific(pa):
     """Regression: every generated name used to be prefixed with a title."""
-    from pashto_toolkit.providers import provider_class
+    from pashto_toolkit.fake.providers import provider_class
 
     titles = set(provider_class("person", "pa_AF").prefixes_male)
     titles |= set(provider_class("person", "pa_AF").prefixes_female)

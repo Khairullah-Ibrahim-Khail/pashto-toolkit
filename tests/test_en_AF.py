@@ -45,16 +45,16 @@ def test_formatter_returns_latin(en, formatter):
 
 def test_lorem_is_english_not_pashto(en):
     """Regression: en_AF used to serve the Pashto word list."""
-    from faker.providers.lorem.en_US import Provider as EnUs
+    from pashto_toolkit.fake.providers import provider_class
 
-    english = set(EnUs.word_list)
+    english = set(provider_class("lorem", "en_AF").word_list)
     for _ in range(REPEAT):
         assert en.word() in english
 
 
 def test_names_have_no_dangling_suffix(en):
     """Regression: name() glued a lowercase tribal ending on as a separate word."""
-    from pashto_toolkit.providers import provider_class
+    from pashto_toolkit.fake.providers import provider_class
 
     suffixes = set(provider_class("person", "en_AF").suffixes)
     for _ in range(200):
@@ -66,7 +66,7 @@ def test_names_have_no_dangling_suffix(en):
 
 
 def test_months_are_afghan_solar_calendar(en):
-    from pashto_toolkit.providers import provider_class
+    from pashto_toolkit.fake.providers import provider_class
 
     months = set(m for m in provider_class("date_time", "en_AF").month_names if m)
     for _ in range(REPEAT):

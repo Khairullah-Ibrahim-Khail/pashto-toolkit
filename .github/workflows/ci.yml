@@ -25,32 +25,10 @@ jobs:
         run: ruff check .
       - name: Test
         run: pytest -q
-
-  faker-versions:
-    # The locale hook depends on Faker internals, so pin-test a range of them.
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        faker-version: ["24.5.0", "28.0.0", "33.0.0", "39.0.0", ""]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install
+      - name: Confirm there are no runtime dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install -e ".[dev]"
-          if [ -n "${{ matrix.faker-version }}" ]; then
-            pip install "Faker==${{ matrix.faker-version }}"
-          else
-            pip install --upgrade Faker
-          fi
-      - name: Report Faker version
-        run: python -c "import faker; print('Faker', faker.VERSION)"
-      - name: Test
-        run: pytest -q
+          pip uninstall -y ruff
+          python -c "import pashto_toolkit, json; print(pashto_toolkit.PashtoFaker().name())"
 
   build:
     runs-on: ubuntu-latest
@@ -59,7 +37,14 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: |
+      - name: Build and check
+        run: |
           python -m pip install --upgrade pip build twine
           python -m build
           python -m twine check dist/*
+      - name: Install the wheel on its own and use it
+        run: |
+          python -m venv /tmp/v
+          /tmp/v/bin/pip install dist/*.whl
+          /tmp/v/bin/pip list
+          /tmp/v/bin/python -c "from pashto_toolkit import PashtoFaker; f=PashtoFaker(seed=1); print(f.name(), f.province(), f.afghan_id())"

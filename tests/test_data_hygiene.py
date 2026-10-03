@@ -7,7 +7,7 @@ never catch.
 
 import pytest
 
-from pashto_toolkit.providers import LOCALES, PROVIDER_TYPES, provider_class
+from pashto_toolkit.fake.providers import LOCALES, PROVIDER_TYPES, provider_class
 
 
 def _tables(provider_type, locale):
@@ -41,16 +41,21 @@ def test_no_stray_whitespace_in_data(provider_type, locale):
 @pytest.mark.parametrize("locale", LOCALES)
 @pytest.mark.parametrize("provider_type", PROVIDER_TYPES)
 def test_no_duplicate_entries_in_name_tables(provider_type, locale):
-    """Duplicates silently skew the distribution."""
+    """Repeated entries make those values proportionally more likely.
+
+    Reported as a count rather than a list of names, so the failure stays
+    readable. Known and not yet resolved in the inherited data, hence xfail.
+    """
     offenders = []
     for attr, entries in _tables(provider_type, locale):
         if "name" not in attr and "companies" not in attr and "banks" not in attr:
             continue
-        duplicates = {e for e in entries if entries.count(e) > 1 and e}
-        if duplicates:
-            offenders.append(f"{provider_type}.{attr}: {sorted(duplicates)}")
+        unique = len(set(entries))
+        if unique < len(entries):
+            share = 100 * (len(entries) - unique) / len(entries)
+            offenders.append(f"{provider_type}.{attr}: {len(entries)} entries, {unique} unique ({share:.0f}% repeats)")
     if offenders:
-        pytest.xfail("duplicate entries skew distribution:\n" + "\n".join(offenders))
+        pytest.xfail("repeated entries skew the distribution:\n" + "\n".join(offenders))
 
 
 @pytest.mark.parametrize("locale", LOCALES)
@@ -87,10 +92,28 @@ def test_province_tables_agree(locale):
 @pytest.mark.parametrize("locale", LOCALES)
 def test_district_follows_the_requested_province(locale):
     """A province with no districts silently returns the province name instead."""
-    from faker import Faker
+    from pashto_toolkit import PashtoFaker
 
-    fake = Faker(locale)
+    fake = PashtoFaker(locale)
     address = provider_class("address", locale)
     for province, districts in address.districts.items():
         value = fake.district(province)
         assert value in districts, f"{province}: got {value!r}, not one of its districts"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_emails_and_usernames_are_always_well_formed(locale):
+    """Regression: two-word names such as 'Bakht Awar' left a space in the address."""
+    import re
+
+    from pashto_toolkit import PashtoFaker
+
+    fake = PashtoFaker(locale, seed=0)
+    address = re.compile(r"[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}")
+    username = re.compile(r"[a-z0-9._]+")
+
+    bad_emails = {value for value in (fake.email() for _ in range(3000)) if not address.fullmatch(value)}
+    assert not bad_emails, f"malformed email addresses: {sorted(bad_emails)[:5]}"
+
+    bad_names = {value for value in (fake.user_name() for _ in range(3000)) if not username.fullmatch(value)}
+    assert not bad_names, f"malformed usernames: {sorted(bad_names)[:5]}"

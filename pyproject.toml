@@ -5,13 +5,13 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pashto-toolkit"
 version = "0.1.0"
-description = "Afghanistan locales (pa_AF Pashto, en_AF English) for Faker"
+description = "Pashto and Afghan fake data generation, with no dependencies"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Khairullah Ibrahim Khail" }]
-keywords = ["faker", "pashto", "afghanistan", "locale", "test-data", "pa_AF", "en_AF"]
+keywords = ["pashto", "afghanistan", "fake-data", "test-data", "locale", "pa_AF", "en_AF", "pashto-nlp"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -25,7 +25,7 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Testing",
 ]
-dependencies = ["Faker>=24.5.0"]
+dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "ruff>=0.5"]

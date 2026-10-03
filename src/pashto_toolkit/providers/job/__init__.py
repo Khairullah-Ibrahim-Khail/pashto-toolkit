@@ -1,1 +1,0 @@
-"""Afghanistan job providers."""
