@@ -27,7 +27,7 @@ class Provider(BaseProvider):
     )
     email_formats: Sequence[str] = ("{{user_name}}@{{domain_name}}", "{{user_name}}@{{free_email_domain}}")
     url_formats: Sequence[str] = ("https://www.{{domain_name}}/", "https://{{domain_name}}/")
-    uri_paths: Sequence[str] = ("", "about", "search", "posts", "category", "tag", "blog", "news")
+    uri_paths: Sequence[str] = ("about", "search", "posts", "category", "tag", "blog", "news", "docs")
     uri_pages: Sequence[str] = ("index", "home", "search", "main", "post", "register", "login", "about")
     uri_extensions: Sequence[str] = (".html", ".htm", ".php", ".jsp", ".asp", "")
 

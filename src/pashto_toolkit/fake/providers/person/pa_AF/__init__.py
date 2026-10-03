@@ -20,6 +20,12 @@ class Provider(PersonProvider):
         "حاجي", "ملا", "استاد", "امیر", "سيد", "ملک",
     ]
 
+    # Pashto family-name endings, used by suffix(). Written separately here;
+    # in a full name they are normally joined to the stem.
+    suffixes = [
+        "زی", "خېل", "وال", "زاده", "مل", "یار", "ګل", "الدين",
+    ]
+
     prefixes_female = [
         "آغلې", "محترمه", "بی بی", "میرمنه",
         "ډاکټرې", "محترمه بي بي",
