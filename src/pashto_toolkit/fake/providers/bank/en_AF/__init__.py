@@ -5,7 +5,10 @@ class Provider(BankProvider):
     """Afghan Bank provider in English"""
 
     country_code = "AF"
-    bban_format = "AF################"
+    # The BBAN excludes the country code; iban() prepends it with the
+    # check digits. Afghanistan has no registered IBAN format, so this is
+    # a plausible 16-digit basic account number.
+    bban_format = "################"
 
     swift_bank_codes = (
         "DAAF", "AZBK", "KBLK", "MWBK", "PSBK",

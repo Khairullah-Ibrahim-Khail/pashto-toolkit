@@ -78,3 +78,25 @@ def test_unknown_provider_names_are_rejected():
         provider_class("nope", "pa_AF")
     with pytest.raises(ValueError):
         provider_class("person", "xx_XX")
+
+
+def test_base_provider_helpers_are_not_formatters():
+    """numerify/random_element and friends are tools, not data to generate."""
+    from pashto_toolkit.fake import BaseProvider
+
+    helpers = {name for name in dir(BaseProvider) if not name.startswith("_")}
+    leaked = helpers & set(PashtoFaker().formatters())
+    assert not leaked, f"BaseProvider helpers advertised as formatters: {sorted(leaked)}"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_iban_has_correct_check_digits(locale):
+    """Regression: the BBAN repeated the country code, giving 'AF19AF8495...'."""
+    fake = PashtoFaker(locale, seed=3)
+    for _ in range(500):
+        iban = fake.iban()
+        assert iban.startswith("AF"), iban
+        assert not iban[4:].startswith("AF"), f"country code repeated inside the BBAN: {iban}"
+        rearranged = iban[4:] + iban[:4]
+        numeric = "".join(str(ord(c) - 55) if c.isalpha() else c for c in rearranged)
+        assert int(numeric) % 97 == 1, f"bad IBAN check digits: {iban}"

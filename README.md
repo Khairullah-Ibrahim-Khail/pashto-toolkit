@@ -44,7 +44,7 @@ Machine-readable values stay Latin in both locales, because that is what they ar
 
 ## What it generates
 
-18 provider types, 144 formatters. The Afghanistan-specific ones:
+18 provider types, 133 formatters. The Afghanistan-specific ones:
 
 - **`afghan_id()`** — national ID (tazkira), `XXXX-XXX-XXX-XXX`: twelve digits plus a Luhn check digit. Also `ssn()`.
 - **`province()` / `city()` / `district()`** — all 34 provinces, each with its capital and its districts. `city(province)` and `district(province)` stay consistent with the province you pass.

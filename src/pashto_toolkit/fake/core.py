@@ -106,6 +106,10 @@ class BaseProvider:
         return self.generator.parse(template)
 
 
+#: Attributes every provider inherits, which are not formatters.
+_NOT_FORMATTERS = frozenset(name for name in dir(BaseProvider) if not name.startswith("_"))
+
+
 class Generator:
     """Holds a locale's providers and dispatches formatter calls.
 
@@ -126,11 +130,17 @@ class Generator:
 
     # --- provider registration -------------------------------------------
     def add_provider(self, provider: Union[BaseProvider, Type[BaseProvider]]) -> BaseProvider:
-        """Register a provider instance or class and expose its formatters."""
+        """Register a provider instance or class and expose its formatters.
+
+        Only the provider's own methods become formatters. The helpers it
+        inherits from :class:`BaseProvider` -- ``numerify``, ``random_element``
+        and the rest -- are tools for writing providers, not data to generate,
+        so they stay off the generator.
+        """
         instance = provider(self) if isinstance(provider, type) else provider
         self._providers.insert(0, instance)
         for name in dir(instance):
-            if name.startswith("_") or name in ("generator", "random"):
+            if name.startswith("_") or name in _NOT_FORMATTERS:
                 continue
             attribute = getattr(instance, name)
             if callable(attribute):
