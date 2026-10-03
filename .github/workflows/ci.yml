@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+      - name: Lint
+        run: ruff check .
+      - name: Test
+        run: pytest -q
+
+  faker-versions:
+    # The locale hook depends on Faker internals, so pin-test a range of them.
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        faker-version: ["24.5.0", "28.0.0", "33.0.0", "39.0.0", ""]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+          if [ -n "${{ matrix.faker-version }}" ]; then
+            pip install "Faker==${{ matrix.faker-version }}"
+          else
+            pip install --upgrade Faker
+          fi
+      - name: Report Faker version
+        run: python -c "import faker; print('Faker', faker.VERSION)"
+      - name: Test
+        run: pytest -q
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          python -m twine check dist/*

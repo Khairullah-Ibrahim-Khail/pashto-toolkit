@@ -1,0 +1,1 @@
+"""Afghanistan color providers."""

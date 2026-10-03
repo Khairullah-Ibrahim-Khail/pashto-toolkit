@@ -1,0 +1,1 @@
+"""Afghanistan lorem providers."""

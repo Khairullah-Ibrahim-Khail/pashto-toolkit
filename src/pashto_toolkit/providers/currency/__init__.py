@@ -1,0 +1,1 @@
+"""Afghanistan currency providers."""

@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pashto-toolkit"
+version = "0.1.0"
+description = "Afghanistan locales (pa_AF Pashto, en_AF English) for Faker"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Khairullah Ibrahim Khail" }]
+keywords = ["faker", "pashto", "afghanistan", "locale", "test-data", "pa_AF", "en_AF"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: Pashto",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Testing",
+]
+dependencies = ["Faker>=24.5.0"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7", "ruff>=0.5"]
+
+[project.urls]
+Homepage = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit"
+Issues = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+pashto_toolkit = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+# The providers deliberately mirror Faker's own source style, which still uses
+# typing.List / typing.Tuple rather than PEP 585 builtin generics.
+ignore = ["UP006", "UP035"]

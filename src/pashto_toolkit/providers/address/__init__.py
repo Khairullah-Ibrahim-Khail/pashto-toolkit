@@ -1,0 +1,1 @@
+"""Afghanistan address providers."""
