@@ -288,3 +288,70 @@ def test_alef_madda_is_preserved(provider_type):
         if any(word in folded for word in entry.split())
     ]
     assert not offenders, "alef-madda was folded away:\n" + "\n".join(offenders)
+
+
+#: Words genuinely used for either sex in Afghanistan, so they belong in both
+#: name pools: fortune, meadow, plane tree, river, jewel, flower, covenant.
+UNISEX_LATIN = {"Bakht", "Chaman", "Chinar", "Darya", "Gohar", "Gul", "Paiman", "Ugay"}
+UNISEX_PASHTO = {"امید", "بخت", "دریا", "سپین ګل", "لمر", "پیمان", "چمن", "چنار", "ښائسته", "ګل"}
+
+
+def test_the_name_pools_only_overlap_on_unisex_names():
+    """Regression: the Latin 'male' pool was a merge of male and female names.
+
+    Spozmai (moon), Malalai, Muska (smile), Brekhna (lightning), Ghuncha
+    (bud), Zaituna (olive) and 125 more women's names sat in it, so
+    simple_profile() produced records like sex 'M' named 'Zaituna Wahidi'.
+    """
+    person = provider_class("person", "en_AF")
+    male = set(person.pashto_male_first_names) | set(person.tajik_male_first_names)
+    female = set(person.pashto_female_first_names) | set(person.tajik_female_first_names)
+    unexpected = (male & female) - UNISEX_LATIN
+    assert not unexpected, f"names in both pools that are not unisex: {sorted(unexpected)}"
+
+    pashto = provider_class("person", "pa_AF")
+    male_ps = set(pashto.pashto_male_first_names)
+    female_ps = set(pashto.pashto_female_first_names)
+    unexpected_ps = (male_ps & female_ps) - UNISEX_PASHTO
+    assert not unexpected_ps, f"Pashto names in both pools that are not unisex: {sorted(unexpected_ps)}"
+
+
+def test_known_womens_names_are_not_in_the_male_pool():
+    """A sample of unmistakable women's names, pinned by hand."""
+    known = {
+        "Spozmai", "Malalai", "Muska", "Brekhna", "Zaituna", "Khatol", "Ghuncha",
+        "Mina", "Durkhanai", "Wagma", "Nazo", "Shahlalai", "Shaperai", "Palwasha",
+        "Zarghuna", "Gulalai", "Kashmala", "Banafsha", "Farishta", "Bibi",
+    }
+    for locale, male_attrs in (
+        ("en_AF", ("pashto_male_first_names", "tajik_male_first_names")),
+        ("pa_AF", ("male_first_names",)),
+    ):
+        person = provider_class("person", locale)
+        male = set().union(*(set(getattr(person, attr)) for attr in male_attrs))
+        leaked = sorted(known & male)
+        assert not leaked, f"{locale}: women's names in the male pool: {leaked}"
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_profiles_are_gender_consistent(locale):
+    """A record's username must come from the pool matching its sex."""
+    from pashto_toolkit import PashtoFaker
+
+    person = provider_class("person", locale)
+    male_attr = "male_first_names" if locale == "pa_AF" else "pashto_male_first_names"
+    female_attr = "female_first_names" if locale == "pa_AF" else "pashto_female_first_names"
+    male = {n.lower() for n in getattr(person, male_attr)}
+    female = {n.lower() for n in getattr(person, female_attr)}
+
+    fake = PashtoFaker(locale, seed=7)
+    mismatches = []
+    for _ in range(3000):
+        record = fake.simple_profile()
+        stem = record["username"].split(".")[0]
+        if record["sex"] == "F" and stem in male - female:
+            mismatches.append(record)
+        elif record["sex"] == "M" and stem in female - male:
+            mismatches.append(record)
+    # The Tajik pools are a separate source, so allow a small residue.
+    assert len(mismatches) <= 15, f"{len(mismatches)}/3000 gender mismatches, e.g. {mismatches[:3]}"
