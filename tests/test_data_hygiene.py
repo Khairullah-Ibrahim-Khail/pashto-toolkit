@@ -169,3 +169,56 @@ def test_msisdn_is_a_full_afghan_number(locale):
         assert value.isdigit(), value
         assert len(value) == 11, f"expected 11 digits, got {len(value)}: {value}"
         assert value.startswith("937"), value
+
+
+@pytest.mark.parametrize("locale", LOCALES)
+def test_names_never_stack_two_honorifics(locale):
+    """Regression: output like 'بی بی بی بی غلجي' and 'Agha Wazir Umar'.
+
+    Several words are both a title and a given name, so prepending a title
+    unconditionally produced two in a row.
+    """
+    from pashto_toolkit import PashtoFaker
+
+    person = provider_class("person", locale)
+    titles = set(person.prefixes_male) | set(person.prefixes_female)
+    fake = PashtoFaker(locale, seed=3)
+
+    offenders = set()
+    for _ in range(20000):
+        tokens = fake.name().split()
+        # Two leading titles only matters when a third token follows; a
+        # two-token name is first name plus surname, and words like Khan are
+        # legitimate surnames.
+        if len(tokens) >= 3 and tokens[0] in titles and tokens[1] in titles:
+            offenders.add(" ".join(tokens))
+    assert not offenders, f"names with stacked honorifics: {sorted(offenders)[:5]}"
+
+
+def test_pashto_surnames_are_not_female_given_names():
+    """Regression: last_names held فاطمه, نجمه, ليلا and similar.
+
+    An Afghan second name follows the father's or husband's name, so it is
+    not a female given name.
+    """
+    person = provider_class("person", "pa_AF")
+    surnames = set(person.last_names)
+    female_given = {"شکيبا", "نسرين", "زينب", "مريم", "فاطمه", "ليلا", "زهرا",
+                    "عایشه", "نرگس", "فرشته", "نجمه", "شيرين"}
+    assert not (surnames & female_given), f"female given names used as surnames: {sorted(surnames & female_given)}"
+
+
+def test_pashto_surnames_hold_no_place_names_or_common_nouns():
+    """Regression: غور and قندهار are places; زوی and فرزند mean son and child."""
+    person = provider_class("person", "pa_AF")
+    surnames = set(person.last_names)
+    wrong = {"غور", "قندهار", "زوی", "فرزند"}
+    assert not (surnames & wrong), f"not surnames: {sorted(surnames & wrong)}"
+    # The correct derived forms are the ones that belong.
+    assert "کندهاري" in surnames
+
+
+def test_pashto_surnames_have_no_duplicates():
+    person = provider_class("person", "pa_AF")
+    surnames = list(person.last_names)
+    assert len(surnames) == len(set(surnames)), "duplicate surnames skew the distribution"

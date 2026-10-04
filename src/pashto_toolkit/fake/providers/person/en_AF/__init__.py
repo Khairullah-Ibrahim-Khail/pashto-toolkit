@@ -530,10 +530,22 @@ class Provider(PersonProvider):
             first, prefixes = self.first_name_female(), self.prefixes_female
 
         parts = []
-        if self.generator.random.random() < self.honorific_probability:
+        # Several words are both a title and a given name, so a name whose
+        # given name is already a title must not take another one in front,
+        # or it comes out as "بی بی بی بی ..." / "Agha Wazir ...".
+        if self.generator.random.random() < self.honorific_probability and not self._is_honorific(first):
             parts.append(self.generator.random.choice(prefixes))
         parts += [first, self.last_name()]
         return " ".join(parts)
+
+    def _is_honorific(self, name):
+        """True when ``name`` is, or begins with, one of this locale's titles.
+
+        Some given names are themselves two words beginning with a title,
+        such as "Bibi Rokhana", so the first token is checked as well.
+        """
+        titles = set(self.prefixes_male) | set(self.prefixes_female)
+        return name in titles or name.split()[0] in titles
 
     def name_male(self):
         return f"{self.first_name_male()} {self.last_name()}"
