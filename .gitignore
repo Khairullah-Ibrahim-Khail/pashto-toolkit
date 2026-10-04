@@ -12,3 +12,9 @@ venv/
 .vscode/
 tempCodeRunnerFile.py
 .ipynb_checkpoints/
+
+# personal scratch files, not part of the library
+example.py
+example *.py
+example.ipynb
+*.csv

@@ -29,8 +29,6 @@ dependencies = []
 
 [project.optional-dependencies]
 dev = ["pytest>=7", "ruff>=0.5"]
-# For running example.ipynb in VS Code or Jupyter. Not needed by the library.
-notebook = ["ipykernel>=6"]
 
 [project.urls]
 Homepage = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit"
