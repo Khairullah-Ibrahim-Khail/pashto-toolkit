@@ -10,3 +10,5 @@ venv/
 .coverage
 
 .vscode/
+tempCodeRunnerFile.py
+.ipynb_checkpoints/
