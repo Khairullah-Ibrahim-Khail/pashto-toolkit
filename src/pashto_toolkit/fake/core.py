@@ -232,15 +232,20 @@ class Generator:
         self.random.seed(seed)
         return self
 
-    def format(self, name: str, *args: Any, **kwargs: Any) -> Any:
-        """Call a formatter by name."""
+    def format(self, formatter: str, /, *args: Any, **kwargs: Any) -> Any:
+        """Call a formatter by name, passing through any arguments.
+
+        The formatter name is positional-only so that a keyword argument of
+        the same name -- ``format("user_name", name=...)`` -- cannot collide
+        with it.
+        """
         try:
-            formatter = self._formatters[name]
+            function = self._formatters[formatter]
         except KeyError:
             raise UnknownFormatter(
-                f"No provider supplies a formatter named {name!r} for locale {self.current_locale!r}."
+                f"No provider supplies a formatter named {formatter!r} for locale {self.current_locale!r}."
             ) from None
-        return formatter(*args, **kwargs)
+        return function(*args, **kwargs)
 
     def parse(self, template: str) -> str:
         """Expand ``{{formatter}}`` tokens in ``template``."""

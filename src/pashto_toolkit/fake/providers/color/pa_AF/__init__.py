@@ -15,7 +15,7 @@ class Provider(ColorProvider):
         ("بېژ", "#F5F5DC"),  # Beige
         ("کرم", "#FFE4C4"),  # Bisque
         ("تور", "#000000"),  # Black
-        ("کاهگلي", "#FFEBCD"),  # Blanched Almond
+        ("کاهګلي", "#FFEBCD"),  # Blanched Almond
         ("آسماني", "#0000FF"),  # Blue
         ("بنفش تیره", "#8A2BE2"),  # Blue Violet
         ("قهوه‌اي", "#A52A2A"),  # Brown
@@ -39,13 +39,13 @@ class Provider(ColorProvider):
         ("نارنجي تیره", "#FF8C00"),  # Dark Orange
         ("ارکیده بنفش", "#9932CC"),  # Dark Orchid
         ("سور تیره", "#8B0000"),  # Dark Red
-        ("قهوه‌اي حنايي", "#E9967A"),  # Dark Salmon
+        ("قهوه‌اي حنایي", "#E9967A"),  # Dark Salmon
         ("سبز دریایي تیره", "#8FBC8F"),  # Dark Sea Green
         ("آبی دودي", "#483D8B"),  # Dark Slate Blue
         ("لجنی تیره", "#2F4F4F"),  # Dark Slate Gray
         ("بنفش باز", "#9400D3"),  # Dark Violet
         ("شفقي", "#FF1493"),  # Deep Pink
-        ("آبی کمرنگ", "#00BFFF"),  # Deep Sky Blue
+        ("آبی کمرنګ", "#00BFFF"),  # Deep Sky Blue
         ("دودي", "#696969"),  # Dim Gray
         ("آبی", "#1E90FF"),  # Dodger Blue
         ("شرابي", "#B22222"),  # Firebrick
@@ -61,11 +61,11 @@ class Provider(ColorProvider):
         ("شین پستې", "#ADFF2F"),  # Green Yellow
         ("شین محو", "#F0FFF0"),  # Honeydew
         ("سرخابي روشن", "#FF69B4"),  # Hot Pink
-        ("جگري", "#CD5C5C"),  # Indian Red
+        ("جګري", "#CD5C5C"),  # Indian Red
         ("نیلي تیره", "#4B0082"),  # Indigo
         ("استخواني", "#FFFFF0"),  # Ivory
         ("خاکي روشن", "#F0E68C"),  # Khaki
-        ("نیلي کمرنگ", "#E6E6FA"),  # Lavender
+        ("نیلي کمرنګ", "#E6E6FA"),  # Lavender
         ("صورتي مات", "#FFF0F5"),  # Lavender Blush
         ("شین چمني", "#7CFC00"),  # Lawn Green
         ("شیرشکري", "#FFFACD"),  # Lemon Chiffon
@@ -99,7 +99,7 @@ class Provider(ColorProvider):
         ("آبی نفتي", "#191970"),  # Midnight Blue
         ("سفید نعناعي", "#F5FFFA"),  # Mint Cream
         ("بېژ صورتي", "#FFE4E1"),  # Misty Rose
-        ("هلويي", "#FFE4B5"),  # Moccasin
+        ("هلویي", "#FFE4B5"),  # Moccasin
         ("کرم تیره", "#FFDEAD"),  # Navajo White
         ("سرمه‌اي", "#000080"),  # Navy
         ("بېژ روشن", "#FDF5E6"),  # Old Lace
@@ -109,22 +109,22 @@ class Provider(ColorProvider):
         ("قرمز نارنجي", "#FF4500"),  # Orange Red
         ("ارکیده روشن", "#DA70D6"),  # Orchid
         ("نخودي", "#EEE8AA"),  # Pale Goldenrod
-        ("سبز کمرنگ", "#98FB98"),  # Pale Green
-        ("فیروزي کمرنگ", "#AFEEEE"),  # Pale Turquoise
+        ("سبز کمرنګ", "#98FB98"),  # Pale Green
+        ("فیروزي کمرنګ", "#AFEEEE"),  # Pale Turquoise
         ("شرابي روشن", "#DB7093"),  # Pale Violet Red
-        ("هلويي روشن", "#FFEFD5"),  # Papaya Whip
-        ("هلويي", "#FFDAB9"),  # Peach Puff
+        ("هلویي روشن", "#FFEFD5"),  # Papaya Whip
+        ("هلویي", "#FFDAB9"),  # Peach Puff
         ("بادامي تیره", "#CD853F"),  # Peru
         ("صورتي", "#FFC0CB"),  # Pink
-        ("بنفش کمرنگ", "#DDA0DD"),  # Plum
+        ("بنفش کمرنګ", "#DDA0DD"),  # Plum
         ("آبی کبریتي روشن", "#B0E0E6"),  # Powder Blue
         ("بنفش متوسط", "#800080"),  # Purple
         ("سور", "#FF0000"),  # Red
         ("بادمجاني", "#BC8F8F"),  # Rosy Brown
         ("آبی سلطنتي", "#4169E1"),  # Royal Blue
-        ("کاکائويي", "#8B4513"),  # Saddle Brown
+        ("کاکائویي", "#8B4513"),  # Saddle Brown
         ("سالمون روشن", "#FA8072"),  # Salmon
-        ("هلويي تیره", "#F4A460"),  # Sandy Brown
+        ("هلویي تیره", "#F4A460"),  # Sandy Brown
         ("خزه‌اي تیره", "#2E8B57"),  # Sea Green
         ("صدفي", "#FFF5EE"),  # Seashell
         ("قهوه‌اي متوسط", "#A0522D"),  # Sienna
@@ -138,10 +138,10 @@ class Provider(ColorProvider):
         ("برنزه", "#D2B48C"),  # Tan
         ("سبز دودي", "#008080"),  # Teal
         ("بادمجاني روشن", "#D8BFD8"),  # Thistle
-        ("قرمز گوجه‌اي", "#FF6347"),  # Tomato
+        ("قرمز ګوجه‌اي", "#FF6347"),  # Tomato
         ("فیروزي روشن", "#40E0D0"),  # Turquoise
         ("بنفش روشن", "#EE82EE"),  # Violet
-        ("گندمي", "#F5DEB3"),  # Wheat
+        ("ګندمي", "#F5DEB3"),  # Wheat
         ("سپین", "#FFFFFF"),  # White
         ("خاکستري محو", "#F5F5F5"),  # White Smoke
         ("ژېړ", "#FFFF00"),  # Yellow

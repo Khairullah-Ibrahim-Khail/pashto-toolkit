@@ -27,21 +27,38 @@ class Provider(BaseProvider):
     def _name_for(self, sex: SexLiteral) -> str:
         return self.generator.format("name_male" if sex == "M" else "name_female")
 
+    def _identity(self, sex: SexLiteral) -> Dict[str, Any]:
+        """A name with a username and address derived from it.
+
+        One record describes one person, so the username and mail are built
+        from the name rather than drawn separately. In ``pa_AF`` the display
+        name is in Pashto script and cannot be transliterated here, so the
+        username falls back to the Latin pools; it still matches the mail.
+        """
+        name = self._name_for(sex)
+        # pass the gender too, so the fallback pool matches when the display
+        # name cannot be transliterated
+        username = self.generator.format("user_name", sex, name)
+        domain = self.generator.format("free_email_domain")
+        return {"name": name, "username": username, "mail": f"{username}@{domain}"}
+
     def simple_profile(self, sex: Optional[SexLiteral] = None) -> Dict[str, Any]:
         """A small record: username, name, sex, address, mail, birthdate."""
         chosen = self._sex(sex)
+        identity = self._identity(chosen)
         return {
-            "username": self.generator.format("user_name"),
-            "name": self._name_for(chosen),
+            "username": identity["username"],
+            "name": identity["name"],
             "sex": chosen,
             "address": self.generator.format("address"),
-            "mail": self.generator.format("free_email"),
+            "mail": identity["mail"],
             "birthdate": self.generator.format("date_of_birth"),
         }
 
     def profile(self, fields: Optional[Sequence[str]] = None, sex: Optional[SexLiteral] = None) -> Dict[str, Any]:
         """A full record. ``fields`` selects a subset, in the order given."""
         chosen = self._sex(sex)
+        identity = self._identity(chosen)
         record: Dict[str, Any] = {
             "job": self.generator.format("job"),
             "company": self.generator.format("company"),
@@ -49,11 +66,11 @@ class Provider(BaseProvider):
             "residence": self.generator.format("address"),
             "blood_group": self.blood_group(),
             "website": [self.generator.format("url") for _ in range(self.random_int(1, 3))],
-            "username": self.generator.format("user_name"),
-            "name": self._name_for(chosen),
+            "username": identity["username"],
+            "name": identity["name"],
             "sex": chosen,
             "address": self.generator.format("address"),
-            "mail": self.generator.format("free_email"),
+            "mail": identity["mail"],
             "birthdate": self.generator.format("date_of_birth"),
         }
         if fields is None:

@@ -73,19 +73,32 @@ class Provider(BaseProvider):
     # --- identities -------------------------------------------------------
     def user_name(self) -> str:
         name = self.slugify(self.bothify(self.parse(self.random_element(self.user_name_formats))))
-        return name or self.lexify("??????", letters="abcdefghijklmnopqrstuvwxyz")
+        # A locale written in a non-Latin script slugifies away to nothing or
+        # to the format's digits alone, so require a real word.
+        if len(name.strip("0123456789.-_")) < 3:
+            return self.random_element(self.slug_words) + str(self.random_int(1, 999))
+        return name
 
     def email(self) -> str:
         return self.parse(self.random_element(self.email_formats))
 
+    def _local_part(self) -> str:
+        """The part before the @.
+
+        Dispatched through the generator so a locale that defines its own
+        user_name() is used. Building it here from the display names would
+        give an empty string in a locale written in Pashto script.
+        """
+        return self.generator.format("user_name")
+
     def safe_email(self) -> str:
-        return f"{self.user_name()}@example.{self.random_element(self.safe_email_tlds)}"
+        return f"{self._local_part()}@example.{self.random_element(self.safe_email_tlds)}"
 
     def free_email(self) -> str:
-        return f"{self.user_name()}@{self.free_email_domain()}"
+        return f"{self._local_part()}@{self.free_email_domain()}"
 
     def company_email(self) -> str:
-        return f"{self.user_name()}@{self.domain_name()}"
+        return f"{self._local_part()}@{self.domain_name()}"
 
     # --- locations --------------------------------------------------------
     def uri_path(self, deep: int = 1) -> str:

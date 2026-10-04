@@ -10,6 +10,27 @@ import pytest
 from pashto_toolkit.fake.providers import LOCALES, PROVIDER_TYPES, provider_class
 
 
+def _strings(obj):
+    """Every string anywhere inside a value, including dictionary keys.
+
+    Keys matter: ``color.all_colors`` holds the Pashto colour names as keys
+    and the hex codes as values, so walking only the values misses the text.
+    """
+    if isinstance(obj, str):
+        yield obj
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
+            yield from _strings(key)
+            yield from _strings(value)
+    elif isinstance(obj, (list, tuple, set, frozenset)):
+        for item in obj:
+            yield from _strings(item)
+    else:
+        for attr in ("name", "prefixes"):       # CreditCard carries strings
+            if hasattr(obj, attr):
+                yield from _strings(getattr(obj, attr))
+
+
 def _tables(provider_type, locale):
     """Yield (attribute, entries) for every data table on a provider class."""
     cls = provider_class(provider_type, locale)
@@ -17,13 +38,18 @@ def _tables(provider_type, locale):
         if attr.startswith("_"):
             continue
         value = getattr(cls, attr, None)
+        if callable(value):
+            continue
         if isinstance(value, (list, tuple)) and value and all(isinstance(x, str) for x in value):
             yield attr, list(value)
         elif isinstance(value, dict):
+            keys = [k for k in value if isinstance(k, str)]
+            if keys:
+                yield f"{attr} keys", keys
             for key, nested in value.items():
-                entries = nested if isinstance(nested, (list, tuple)) else [nested]
-                if entries and all(isinstance(x, str) for x in entries):
-                    yield f"{attr}[{key!r}]", list(entries)
+                entries = list(_strings(nested))
+                if entries:
+                    yield f"{attr}[{key!r}]", entries
 
 
 @pytest.mark.parametrize("locale", LOCALES)

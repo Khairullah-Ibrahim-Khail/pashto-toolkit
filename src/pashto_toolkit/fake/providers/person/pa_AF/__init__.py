@@ -170,7 +170,7 @@ class Provider(PersonProvider):
 
     last_names = [
         "دراني", "پوپلزي", "بارکزي", "الکوزي", "اڅکزي", "غلجي",
-        "هوتک", "توخي", "ناصر", "خروټي", "سولېمان خېل", "علي خېل",
+        "هوتک", "توخي", "ناصر", "خروټي", "سلېمان خېل", "علي خېل",
         "ابراهیم خېل", "یوسفزي", "مومند", "افریدي", "شینواري", "محسود",
         "وزیر", "داور", "بانوڅي", "خټک", "اورکزي", "ترین",
         "کاکړ", "ماندر", "شرني", "منګل", "زدران", "چمکني",
@@ -407,6 +407,20 @@ class Provider(PersonProvider):
     ]
 
     # ---------- BASIC PARTS ----------
+    def _slug_name(self, name):
+        """``"Tahir Dawlatzai"`` -> ``"tahir.dawlatzai"``, or ``""``.
+
+        Returns empty when the name has no Latin letters to work from, which
+        is the case for a name in Pashto script.
+        """
+        if not name:
+            return ""
+        parts = [self._slug(part) for part in str(name).split()]
+        parts = [p for p in parts if len(p) >= 2]
+        if not parts:
+            return ""
+        return ".".join(parts[:2]) if len(parts) > 1 else parts[0]
+
     @staticmethod
     def _slug(value: str) -> str:
         """Strip a name down to the characters an address may contain.
@@ -416,8 +430,19 @@ class Provider(PersonProvider):
         """
         return re.sub(r"[^a-z0-9]+", "", value.lower())
 
-    def username(self, gender=None):
-        """Random Afghan-style username, transliterated for use in an address."""
+    def username(self, gender=None, name=None):
+        """Afghan-style username, transliterated so it is address-safe.
+
+        ``name`` lets a caller tie the username to a person they already
+        generated. It only works for a Latin name: a ``pa_AF`` display name is
+        in Pashto script, which has no transliteration table here, so one is
+        drawn from the Latin pools instead. See ``en_AF`` for names that do
+        carry through.
+        """
+        from_name = self._slug_name(name)
+        if from_name:
+            return f"{from_name}{self.generator.random.randint(1, 999)}"
+
         if gender in ("F", "female", "ښځينه"):
             pool = self.female_first_names
         elif gender in ("M", "male", "نارينه"):
@@ -431,13 +456,13 @@ class Provider(PersonProvider):
         number = str(self.generator.random.randint(1, 999))
         return f"{first}.{last}{number}"
 
-    def user_name(self, gender=None):
+    def user_name(self, gender=None, name=None):
         """Standard formatter name for :meth:`username`."""
-        return self.username(gender)
+        return self.username(gender, name)
 
-    def email(self, gender=None):
-        """Full email address"""
-        return f"{self.username(gender)}@{self.generator.random.choice(self.domains)}"
+    def email(self, gender=None, name=None):
+        """Full email address. ``name`` ties it to a person already made."""
+        return f"{self.username(gender, name)}@{self.generator.random.choice(self.domains)}"
 
         # =================End of the email section ==============
 

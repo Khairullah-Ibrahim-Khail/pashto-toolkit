@@ -312,6 +312,20 @@ class Provider(PersonProvider):
         "gmail.com", "yahoo.com", "outlook.com", "afghanmail.com", "mail.com"
     ]
 
+    def _slug_name(self, name):
+        """``"Tahir Dawlatzai"`` -> ``"tahir.dawlatzai"``, or ``""``.
+
+        Returns empty when the name has no Latin letters to work from, which
+        is the case for a name in Pashto script.
+        """
+        if not name:
+            return ""
+        parts = [self._slug(part) for part in str(name).split()]
+        parts = [p for p in parts if len(p) >= 2]
+        if not parts:
+            return ""
+        return ".".join(parts[:2]) if len(parts) > 1 else parts[0]
+
     @staticmethod
     def _slug(value: str) -> str:
         """Strip a name down to the characters an address may contain.
@@ -321,8 +335,17 @@ class Provider(PersonProvider):
         """
         return re.sub(r"[^a-z0-9]+", "", value.lower())
 
-    def username(self, gender=None):
-        """Random Afghan-style username"""
+    def username(self, gender=None, name=None):
+        """Afghan-style username.
+
+        ``name`` ties the username to a person already generated, so a record
+        can be internally consistent: "Tahir Dawlatzai" gives
+        ``tahir.dawlatzai42``. ``en_AF`` names are Latin, so this always works.
+        """
+        from_name = self._slug_name(name)
+        if from_name:
+            return f"{from_name}{self.generator.random.randint(1, 999)}"
+
         if gender == "female":
             first = self._slug(self.generator.random.choice(self.pashto_female_first_names))
         elif gender == "male":
@@ -335,13 +358,13 @@ class Provider(PersonProvider):
         number = str(self.generator.random.randint(1, 999))
         return f"{first}.{last}{number}"
 
-    def user_name(self, gender=None):
+    def user_name(self, gender=None, name=None):
         """Standard formatter name for :meth:`username`."""
-        return self.username(gender)
+        return self.username(gender, name)
 
-    def email(self, gender=None):
-        """Full email address"""
-        return f"{self.username(gender)}@{self.generator.random.choice(self.domains)}"
+    def email(self, gender=None, name=None):
+        """Full email address. ``name`` ties it to a person already made."""
+        return f"{self.username(gender, name)}@{self.generator.random.choice(self.domains)}"
 
     # =================End of the email section ==============
 
