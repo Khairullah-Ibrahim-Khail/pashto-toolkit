@@ -44,7 +44,7 @@ def test_no_duplicate_entries_in_name_tables(provider_type, locale):
     """Repeated entries make those values proportionally more likely.
 
     Reported as a count rather than a list of names, so the failure stays
-    readable. Known and not yet resolved in the inherited data, hence xfail.
+    readable.
     """
     offenders = []
     for attr, entries in _tables(provider_type, locale):
@@ -54,8 +54,7 @@ def test_no_duplicate_entries_in_name_tables(provider_type, locale):
         if unique < len(entries):
             share = 100 * (len(entries) - unique) / len(entries)
             offenders.append(f"{provider_type}.{attr}: {len(entries)} entries, {unique} unique ({share:.0f}% repeats)")
-    if offenders:
-        pytest.xfail("repeated entries skew the distribution:\n" + "\n".join(offenders))
+    assert not offenders, "repeated entries skew the distribution:\n" + "\n".join(offenders)
 
 
 @pytest.mark.parametrize("locale", LOCALES)
@@ -222,3 +221,44 @@ def test_pashto_surnames_have_no_duplicates():
     person = provider_class("person", "pa_AF")
     surnames = list(person.last_names)
     assert len(surnames) == len(set(surnames)), "duplicate surnames skew the distribution"
+
+
+@pytest.mark.parametrize("provider_type", PROVIDER_TYPES)
+def test_pashto_data_uses_pashto_letter_forms(provider_type):
+    """The data is written in standard Afghan Pashto orthography.
+
+    Arabic and Persian look-alikes are not used medially: ``ي`` (U+064A) only
+    word-finally, where it is grammatical, and never ``ك`` (U+0643),
+    ``گ`` (U+06AF) or ``ہ`` (U+06C1).
+    """
+    forbidden = {"ك": "ك Arabic kaf, use ک U+06A9",
+                 "گ": "گ Persian gaf, use ګ U+06AB",
+                 "ہ": "ہ Urdu heh, use ه U+0647"}
+    offenders = []
+    for attr, entries in _tables(provider_type, "pa_AF"):
+        for entry in entries:
+            for char, why in forbidden.items():
+                if char in entry:
+                    offenders.append(f"{provider_type}.{attr}: {entry!r} contains {why}")
+            for word in entry.split():
+                for index, char in enumerate(word):
+                    if char == "ي" and index != len(word) - 1:
+                        offenders.append(f"{provider_type}.{attr}: {entry!r} has a medial ي; use ی U+06CC")
+    assert not offenders, "non-standard letter forms:\n" + "\n".join(offenders[:10])
+
+
+@pytest.mark.parametrize("provider_type", PROVIDER_TYPES)
+def test_alef_madda_is_preserved(provider_type):
+    """``آ`` must not be folded to ``ا``.
+
+    Place names such as فيض آباد, اسدآباد and دوآب carry it, as do words like
+    آشپز. A lexicon-driven normalizer will fold it; the data must not.
+    """
+    folded = {"اباد", "اشپز", "اسماني", "اغلې", "اقچه"}
+    offenders = [
+        f"{provider_type}.{attr}: {entry!r}"
+        for attr, entries in _tables(provider_type, "pa_AF")
+        for entry in entries
+        if any(word in folded for word in entry.split())
+    ]
+    assert not offenders, "alef-madda was folded away:\n" + "\n".join(offenders)

@@ -21,7 +21,5 @@ class Provider(InternetProvider):
 
     # Used by fake.domain_name()
     tlds = (
-        "com", "com", "com",
-        "net", "org",
-        "af", "af", "af",
+        "com", "net", "org", "af",
     )

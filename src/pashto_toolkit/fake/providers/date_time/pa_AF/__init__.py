@@ -6,12 +6,12 @@ class Provider(DateTimeProvider):
 
     # Pashto day names (starting from Saturday)
     day_names = (
-        "پيلنۍ",  # Saturday
-        "يونۍ",  # Sunday
+        "پیلنۍ",  # Saturday
+        "یونۍ",  # Sunday
         "دونۍ",  # Monday
         "منځنۍ",  # Tuesday
         "څلورنۍ",  # Wednesday
-        "پينځنۍ",  # Thursday
+        "پینځنۍ",  # Thursday
         "جمعه",  # Friday
     )
 
@@ -19,7 +19,7 @@ class Provider(DateTimeProvider):
     month_names = (
         "",
         "وری",  # ~ January
-        "غويی",  # ~ February
+        "غویی",  # ~ February
         "غبرګولی",  # ~ March
         "چنګاښ",  # ~ April
         "زمری",  # ~ May

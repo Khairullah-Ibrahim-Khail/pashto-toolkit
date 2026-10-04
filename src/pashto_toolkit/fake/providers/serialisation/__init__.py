@@ -11,6 +11,11 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
 from ...core import BaseProvider
 
+#: Archive entries carry this timestamp instead of the current time, so the
+#: bytes a seed produces are reproducible. 1980-01-01 is the earliest a ZIP
+#: entry can record.
+FIXED_TIMESTAMP = (1980, 1, 1, 0, 0, 0)
+
 #: Default record shape: (column name, formatter name).
 DEFAULT_COLUMNS: Tuple[Tuple[str, str], ...] = (
     ("name", "name"),
@@ -149,7 +154,12 @@ class Provider(BaseProvider):
         buffer = io.BytesIO()
         with zipfile.ZipFile(buffer, "w", compression=modes[compression]) as archive:
             for name, size in zip(self._unique_names(len(sizes)), sizes):
-                archive.writestr(name, self.generator.format("binary", length=size))
+                # writestr(name, ...) would stamp each entry with the current
+                # local time, so two calls either side of a second boundary
+                # produced different bytes under the same seed.
+                info = zipfile.ZipInfo(name, date_time=FIXED_TIMESTAMP)
+                info.compress_type = modes[compression]
+                archive.writestr(info, self.generator.format("binary", length=size))
         return buffer.getvalue()
 
     def tar(
@@ -170,6 +180,7 @@ class Provider(BaseProvider):
                 payload = self.generator.format("binary", length=size)
                 info = tarfile.TarInfo(name=name)
                 info.size = len(payload)
+                info.mtime = 0          # keep the bytes reproducible
                 archive.addfile(info, io.BytesIO(payload))
         return buffer.getvalue()
 
