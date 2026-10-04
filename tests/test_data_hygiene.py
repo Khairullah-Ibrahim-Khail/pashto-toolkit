@@ -355,3 +355,14 @@ def test_profiles_are_gender_consistent(locale):
             mismatches.append(record)
     # The Tajik pools are a separate source, so allow a small residue.
     assert len(mismatches) <= 15, f"{len(mismatches)}/3000 gender mismatches, e.g. {mismatches[:3]}"
+
+
+def test_pashto_jobs_are_occupations_not_conditions():
+    """Regression: the list held کوروالۍ, which reads as "blindness".
+
+    The suffixes -والی, -توب and -تیا form an abstract noun — a state or
+    quality — so a word ending in one is not a person's occupation.
+    """
+    jobs = provider_class("job", "pa_AF").jobs
+    offenders = [job for job in jobs if job.endswith(("والی", "والۍ", "توب", "تیا"))]
+    assert not offenders, f"abstract nouns in the job list, not occupations: {offenders}"
