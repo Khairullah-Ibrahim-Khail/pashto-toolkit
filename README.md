@@ -176,6 +176,6 @@ The tests assert the script and shape of generated values and verify every check
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit/blob/main/LICENSE).
 
 Locale data reflects public knowledge of Afghan provinces, districts, institutions, names and the Afghan calendar.
