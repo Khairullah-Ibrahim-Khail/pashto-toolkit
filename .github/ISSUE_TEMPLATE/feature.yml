@@ -1,0 +1,21 @@
+name: Formatter or locale request
+description: Something the package should be able to generate but cannot
+title: "request: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should it generate?
+      description: An example value, and the Afghan rule or format it follows if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: What are you testing that needs it?
+  - type: input
+    id: name
+    attributes:
+      label: Suggested formatter name
+      placeholder: tazkira_serial

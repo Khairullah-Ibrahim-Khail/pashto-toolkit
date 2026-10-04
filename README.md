@@ -280,13 +280,21 @@ the rest of the Pashto tooling to join it, which is why the generator lives
 under `.fake` rather than at the top level. Importing `PashtoFaker` from
 `pashto_toolkit` will keep working either way.
 
-## Development
+## Contributing
+
+Corrections to the Pashto data are the most valuable contribution, and you do
+not need to write code to make one — an issue naming the wrong value and what
+it should be is enough.
 
 ```bash
 pip install -e ".[dev]"
 pytest
 ruff check .
 ```
+
+[CONTRIBUTING.md](https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit/blob/main/CONTRIBUTING.md) covers the orthography
+rules the data follows, which the tests enforce, and how to add a formatter or
+a locale.
 
 ## License
 

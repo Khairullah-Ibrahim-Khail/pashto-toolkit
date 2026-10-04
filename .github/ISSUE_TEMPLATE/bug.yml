@@ -1,0 +1,37 @@
+name: Bug
+description: Something does not work as documented
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Code that shows it
+      description: As short as you can make it. A seed helps, since a seed repeats.
+      render: python
+      placeholder: |
+        from pashto_toolkit import PashtoFaker
+
+        fake = PashtoFaker("pa_AF", seed=1)
+        print(fake.afghan_id())
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `python -c "import sys, pashto_toolkit; print(sys.version, pashto_toolkit.__version__)"`
+    validations:
+      required: true

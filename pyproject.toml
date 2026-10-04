@@ -40,6 +40,7 @@ Homepage = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit"
 Documentation = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit#readme"
 Source = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit"
 Changelog = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit/blob/main/CHANGELOG.md"
+Contributing = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit/blob/main/CONTRIBUTING.md"
 Issues = "https://github.com/Khairullah-Ibrahim-Khail/pashto-toolkit/issues"
 
 [tool.setuptools.packages.find]

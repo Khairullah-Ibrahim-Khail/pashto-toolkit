@@ -1,0 +1,54 @@
+name: Pashto data correction
+description: A name, place, word or spelling in the data is wrong
+title: "data: "
+labels: ["data"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you — this is the most useful kind of report. You do not need to
+        know Python to file it.
+  - type: input
+    id: current
+    attributes:
+      label: The value as it is now
+      placeholder: سولېمان خېل
+    validations:
+      required: true
+  - type: input
+    id: correct
+    attributes:
+      label: What it should be
+      description: Leave blank if it should simply be removed.
+      placeholder: سلېمان خېل
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of thing is it?
+      options:
+        - Given name, man's
+        - Given name, woman's
+        - Given name, used for either
+        - Family name or tribe
+        - Province, district or city
+        - Institution, bank or company
+        - Ordinary word
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why is the current value wrong?
+      description: >
+        A sentence is enough. For a spelling, which letter is wrong and what it
+        should be. For a name in the wrong list, that it is a woman's name or a
+        place rather than a surname.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where did you see it?
+      description: A file path, or just the formatter that produced it.
+      placeholder: fake.last_name(), or providers/person/pa_AF/__init__.py
